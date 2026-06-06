@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS public.settings (
 
 CREATE TABLE IF NOT EXISTS public.orders (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   customer_name TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT NOT NULL DEFAULT '',
@@ -38,6 +37,9 @@ CREATE TABLE IF NOT EXISTS public.orders (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Add user_id column if table already existed without it
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+
 -- === DEFAULT SETTINGS ===
 INSERT INTO public.settings (key, value) VALUES
   ('site_name', '{"text":"KEBERA"}'),
@@ -47,7 +49,8 @@ INSERT INTO public.settings (key, value) VALUES
   ('about_title', '{"text":"Defining the New Luxury"}'),
   ('about_text', '{"text":"Founded in 2024, KEBERA represents a new wave of fashion."}'),
   ('logo_url', '{"url":""}'),
-  ('favicon_url', '{"url":""}')
+  ('favicon_url', '{"url":""}'),
+  ('admin_email', '{"text":"sadeeppasindu0218@gmail.com"}')
 ON CONFLICT (key) DO NOTHING;
 
 -- === ENABLE RLS ===
@@ -57,20 +60,27 @@ ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
 -- === SECURITY POLICIES ===
 
+-- Helper: check if authenticated user is admin
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN
+LANGUAGE sql STABLE SECURITY DEFINER
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.settings
+    WHERE key = 'admin_email'
+    AND value ->> 'text' = auth.jwt() ->> 'email'
+  );
+$$;
+
 -- PRODUCTS: anyone can view active products
 DROP POLICY IF EXISTS "products_public_select" ON public.products;
 CREATE POLICY "products_public_select" ON public.products
   FOR SELECT USING (is_active = true);
 
--- PRODUCTS: only authenticated users with admin role can modify
+-- PRODUCTS: only admin can modify
 DROP POLICY IF EXISTS "products_admin_all" ON public.products;
 CREATE POLICY "products_admin_all" ON public.products
-  FOR ALL USING (
-    auth.role() = 'authenticated' 
-    AND auth.jwt() ->> 'email' IN (
-      SELECT (value ->> 'text') FROM public.settings WHERE key = 'admin_email'
-    )
-  );
+  FOR ALL USING (public.is_admin());
 
 -- SETTINGS: anyone can read
 DROP POLICY IF EXISTS "settings_public_select" ON public.settings;
@@ -80,19 +90,14 @@ CREATE POLICY "settings_public_select" ON public.settings
 -- SETTINGS: only admin can modify
 DROP POLICY IF EXISTS "settings_admin_all" ON public.settings;
 CREATE POLICY "settings_admin_all" ON public.settings
-  FOR ALL USING (
-    auth.role() = 'authenticated'
-    AND auth.jwt() ->> 'email' IN (
-      SELECT (value ->> 'text') FROM public.settings WHERE key = 'admin_email'
-    )
-  );
+  FOR ALL USING (public.is_admin());
 
 -- ORDERS: users can see their own orders
 DROP POLICY IF EXISTS "orders_user_select" ON public.orders;
 CREATE POLICY "orders_user_select" ON public.orders
   FOR SELECT USING (auth.uid() = user_id);
 
--- ORDERS: anyone authenticated can insert their own order
+-- ORDERS: authenticated users can insert their own order
 DROP POLICY IF EXISTS "orders_user_insert" ON public.orders;
 CREATE POLICY "orders_user_insert" ON public.orders
   FOR INSERT WITH CHECK (auth.uid() = user_id);
@@ -100,12 +105,7 @@ CREATE POLICY "orders_user_insert" ON public.orders
 -- ORDERS: admin can see/modify all orders
 DROP POLICY IF EXISTS "orders_admin_all" ON public.orders;
 CREATE POLICY "orders_admin_all" ON public.orders
-  FOR ALL USING (
-    auth.role() = 'authenticated'
-    AND auth.jwt() ->> 'email' IN (
-      SELECT (value ->> 'text') FROM public.settings WHERE key = 'admin_email'
-    )
-  );
+  FOR ALL USING (public.is_admin());
 
 -- === STORAGE ===
 -- Create bucket (run in Storage > New Bucket > kebera-assets > public)
