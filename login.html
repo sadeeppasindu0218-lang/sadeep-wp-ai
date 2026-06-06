@@ -20,12 +20,16 @@
 </head>
 <body>
   <nav class="nav">
-    <a href="index.html" class="nav-logo">KEBERA</a>
+    <a href="index.html" class="nav-logo">
+      <img id="nav-logo-img" class="nav-logo-img" src="" alt="KEBERA">
+      <span id="nav-logo-text">KEBERA</span>
+    </a>
     <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="shop.html">Shop</a></li>
       <li><a href="about.html">About</a></li>
+      <li><a href="admin/dashboard.html" id="nav-admin" style="display:none;color:var(--accent-1)">Admin</a></li>
       <li><a href="cart.html" class="cart-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         <span class="cart-count">0</span>
@@ -66,7 +70,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/supabase.js"></script>
+  <script src="js/nav.js"></script>
   <script>
+    document.addEventListener('DOMContentLoaded', initNav);
+
     const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
