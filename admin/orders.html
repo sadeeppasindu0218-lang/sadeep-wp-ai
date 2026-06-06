@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders — KEBERA Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">KEBERA</div>
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html">📊 Dashboard</a></li>
+        <li><a href="products.html">🛍️ Products</a></li>
+        <li><a href="settings.html">⚙️ Settings</a></li>
+        <li><a href="orders.html" class="active">📦 Orders</a></li>
+      </ul>
+    </aside>
+    <main class="main-area">
+      <div class="admin-header">
+        <h1>Orders</h1>
+      </div>
+      <table class="data-table" id="orders-table">
+        <thead>
+          <tr><th>Order #</th><th>Customer</th><th>Email</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="orders-body"></tbody>
+      </table>
+    </main>
+  </div>
+
+  <script type="importmap">
+  { "imports": { "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm" } }
+  </script>
+  <script src="../js/supabase.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const session = await getAdminSession();
+      if (!session) { window.location.href = 'index.html'; return; }
+      await loadOrders();
+    });
+
+    async function loadOrders() {
+      const { data } = await adminGetOrders();
+      const tbody = document.getElementById('orders-body');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><h3>No orders yet</h3></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(o => `
+        <tr>
+          <td><strong>#${o.id}</strong></td>
+          <td>${o.customer_name}</td>
+          <td>${o.email}</td>
+          <td>${(o.items || []).length} items</td>
+          <td><strong>Rs. ${(o.total || 0).toLocaleString()}</strong></td>
+          <td><span style="color:${o.status === 'completed' ? 'var(--success)' : o.status === 'cancelled' ? 'var(--danger)' : 'var(--warning)'}">${o.status}</span></td>
+          <td style="font-size:12px;color:var(--text-muted)">${new Date(o.created_at).toLocaleDateString()}</td>
+          <td>
+            <select onchange="updateStatus(${o.id}, this.value)" style="padding:4px 8px;background:var(--admin-input);border:1px solid var(--admin-border);border-radius:4px;color:var(--text-primary);font-size:12px">
+              <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
+              <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Processing</option>
+              <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Completed</option>
+              <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function updateStatus(id, status) {
+      const { error } = await adminUpdateOrderStatus(id, status);
+      if (error) alert('Error: ' + error.message);
+    }
+  </script>
+</body>
+</html>

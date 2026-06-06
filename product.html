@@ -65,12 +65,19 @@
     </div>
   </footer>
 
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
   <script src="js/products.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/main.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      await loadProducts();
+      const dbProducts = await loadProductsFromDB();
+      if (dbProducts && dbProducts.length > 0) {
+        products = dbProducts;
+      } else {
+        await loadProducts();
+      }
       const urlParams = new URLSearchParams(window.location.search);
       const id = parseInt(urlParams.get('id'));
       const product = products.find(p => p.id === id);

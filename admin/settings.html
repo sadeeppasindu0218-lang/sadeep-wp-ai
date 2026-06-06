@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — KEBERA Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">KEBERA</div>
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html">📊 Dashboard</a></li>
+        <li><a href="products.html">🛍️ Products</a></li>
+        <li><a href="settings.html" class="active">⚙️ Settings</a></li>
+        <li><a href="orders.html">📦 Orders</a></li>
+      </ul>
+    </aside>
+    <main class="main-area">
+      <div class="admin-header">
+        <h1>Site Settings</h1>
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Save All</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="general">General</button>
+        <button class="tab" data-tab="hero">Hero Section</button>
+        <button class="tab" data-tab="about">About Page</button>
+      </div>
+
+      <div id="tab-general" class="form-card tab-content">
+        <h2>General Settings</h2>
+        <div class="form-group">
+          <label>Site Name</label>
+          <input type="text" id="s-site_name" value="KEBERA">
+        </div>
+        <div class="form-group">
+          <label>Logo Upload</label>
+          <input type="file" id="logo-file" accept="image/*">
+          <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+            <img id="logo-preview" class="img-preview" style="display:block;width:auto;height:60px">
+            <span id="logo-status" style="font-size:13px;color:var(--text-muted)">No logo uploaded</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>OR Logo URL</label>
+          <input type="url" id="s-logo_url" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label>Favicon URL</label>
+          <input type="url" id="s-favicon_url" placeholder="https://...">
+        </div>
+      </div>
+
+      <div id="tab-hero" class="form-card tab-content" style="display:none">
+        <h2>Hero Section</h2>
+        <div class="form-group">
+          <label>Subtitle</label>
+          <input type="text" id="s-hero_subtitle" value="A/W 2026 Collection">
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="s-hero_title" value="KEBERA">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="s-hero_description" rows="3">Where avant-garde design meets timeless elegance.</textarea>
+        </div>
+      </div>
+
+      <div id="tab-about" class="form-card tab-content" style="display:none">
+        <h2>About Page</h2>
+        <div class="form-group">
+          <label>About Title</label>
+          <input type="text" id="s-about_title" value="Defining the New Luxury">
+        </div>
+        <div class="form-group">
+          <label>About Text</label>
+          <textarea id="s-about_text" rows="5">Founded in 2024, KEBERA represents a new wave of fashion...</textarea>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="importmap">
+  { "imports": { "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm" } }
+  </script>
+  <script src="../js/supabase.js"></script>
+  <script>
+    let currentSettings = {};
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const session = await getAdminSession();
+      if (!session) { window.location.href = 'index.html'; return; }
+      await loadSettings();
+
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+          document.getElementById('tab-' + tab.dataset.tab).style.display = 'block';
+        });
+      });
+
+      document.getElementById('logo-file').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          document.getElementById('logo-preview').src = ev.target.result;
+          document.getElementById('logo-status').textContent = 'File selected: ' + file.name;
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    async function loadSettings() {
+      const { data } = await adminGetAllSettings();
+      if (!data) return;
+      data.forEach(s => {
+        currentSettings[s.key] = s.value;
+        const el = document.getElementById('s-' + s.key);
+        if (el) el.value = s.value.text || s.value.url || '';
+        if (s.key === 'logo_url' && s.value.url && document.getElementById('logo-preview')) {
+          document.getElementById('logo-preview').src = s.value.url;
+          document.getElementById('logo-status').textContent = 'Current logo';
+        }
+      });
+    }
+
+    async function saveSettings() {
+      const settings = {};
+      document.querySelectorAll('.tab-content input, .tab-content textarea').forEach(el => {
+        if (el.id.startsWith('s-')) {
+          const key = el.id.replace('s-', '');
+          settings[key] = el.value;
+        }
+      });
+
+      const logoInput = document.getElementById('logo-file');
+      if (logoInput.files[0]) {
+        const file = logoInput.files[0];
+        const path = 'logos/' + Date.now() + '-' + file.name;
+        const { url, error } = await uploadFile('kebera-assets', path, file);
+        if (url) {
+          settings['logo_url'] = url;
+          document.getElementById('s-logo_url').value = url;
+        }
+      }
+
+      for (const [key, val] of Object.entries(settings)) {
+        if (key === 'logo_url') {
+          await adminUpdateSetting(key, { url: val });
+        } else {
+          await adminUpdateSetting(key, { text: val });
+        }
+      }
+
+      alert('Settings saved!');
+    }
+  </script>
+</body>
+</html>
