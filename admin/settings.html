@@ -44,6 +44,7 @@
         </div>
         <div class="form-group"><label>OR Logo URL</label><input type="url" id="s-logo_url"></div>
         <div class="form-group"><label>Favicon URL</label><input type="url" id="s-favicon_url"></div>
+        <div class="form-group"><label>Admin PIN (4 digits)</label><input type="password" id="s-admin_pin" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
       </div>
       <div id="tab-hero" class="form-card tab-content" style="display:none">
         <h2>Hero Section</h2>
@@ -92,7 +93,7 @@
       if (!data) return;
       data.forEach(s => {
         const el = document.getElementById('s-' + s.key);
-        if (el) el.value = s.value.text || s.value.url || '';
+        if (el) el.value = s.value.text || s.value.url || s.value.pin || '';
         if (s.key === 'logo_url' && s.value.url && document.getElementById('logo-preview')) {
           document.getElementById('logo-preview').src = s.value.url;
           document.getElementById('logo-status').textContent = 'Current logo';
@@ -113,7 +114,13 @@
         if (url) { settings['logo_url'] = url; document.getElementById('s-logo_url').value = url; }
       }
       for (const [key, val] of Object.entries(settings)) {
-        await adminUpdateSetting(key, key === 'logo_url' ? { url: val } : { text: val });
+        if (key === 'admin_pin') {
+          await adminUpdateSetting('admin_pin', { pin: val });
+        } else if (key === 'logo_url') {
+          await adminUpdateSetting('logo_url', { url: val });
+        } else {
+          await adminUpdateSetting(key, { text: val });
+        }
       }
       alert('Settings saved!');
     }

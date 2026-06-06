@@ -161,6 +161,16 @@ async function adminUpdateOrderStatus(id, status) {
   return { error };
 }
 
+async function getAdminPin() {
+  const settings = await loadSettingsFromDB();
+  return settings?.admin_pin?.pin || '0000';
+}
+
+async function verifyAdminPin(pin) {
+  const savedPin = await getAdminPin();
+  return pin === savedPin;
+}
+
 async function uploadFile(bucket, path, file) {
   const sb = getSupabase();
   const { data, error } = await sb.storage.from(bucket).upload(path, file, { upsert: true });
