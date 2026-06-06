@@ -52,18 +52,18 @@
   <script>
     async function handleLogout() {
       await signOut();
-      window.location.href = 'index.html';
+      window.location.href = '../index.html';
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
       const session = await getSession();
-      if (!session) { window.location.href = 'index.html'; return; }
+      if (!session) { window.location.href = '../index.html'; return; }
       
       const user = await getUser();
       const isAdmin = await isAdminEmail(user?.email);
       if (!isAdmin) {
         await signOut();
-        window.location.href = 'index.html';
+        window.location.href = '../index.html';
         return;
       }
 

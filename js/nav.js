@@ -15,7 +15,7 @@ async function initNav() {
       navAuth.onclick = async (e) => {
         e.preventDefault();
         await signOut();
-        window.location.reload();
+        window.location.href = 'index.html';
       };
     }
   } else {

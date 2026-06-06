@@ -82,13 +82,13 @@
   <script src="../js/config.js"></script>
   <script src="../js/supabase.js"></script>
   <script>
-    async function handleLogout() { await signOut(); window.location.href = 'index.html'; }
+    async function handleLogout() { await signOut(); window.location.href = '../index.html'; }
 
     document.addEventListener('DOMContentLoaded', async () => {
       const session = await getSession();
-      if (!session) { window.location.href = 'index.html'; return; }
+      if (!session) { window.location.href = '../index.html'; return; }
       const user = await getUser();
-      if (!(await isAdminEmail(user?.email))) { await signOut(); window.location.href = 'index.html'; return; }
+      if (!(await isAdminEmail(user?.email))) { await signOut(); window.location.href = '../index.html'; return; }
       await loadProductsTable();
 
       document.getElementById('product-form').addEventListener('submit', async (e) => {
