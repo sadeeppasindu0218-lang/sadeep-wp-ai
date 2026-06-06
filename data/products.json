@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "name": "Obsidian Blazer",
+    "category": "outerwear",
+    "price": 28500,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600",
+    "description": "Hand-tailored blazer crafted from premium Italian wool blend. Features a modern silhouette with peak lapels and silk lining.",
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["#1a1a2e", "#2d2d44", "#0f0f1a"]
+  },
+  {
+    "id": 2,
+    "name": "Crystal V-Neck",
+    "category": "tops",
+    "price": 12500,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600",
+    "description": "Silk-blend crystal v-neck top with subtle sheen. Perfect for evening elegance with a modern drape.",
+    "sizes": ["XS", "S", "M", "L"],
+    "colors": ["#e8d5c4", "#f0ebe3", "#d4c5b8"]
+  },
+  {
+    "id": 3,
+    "name": "Aura Maxi Dress",
+    "category": "dresses",
+    "price": 22000,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600",
+    "description": "Floor-length maxi dress with liquid silk fabrication. Features an asymmetrical neckline and open back.",
+    "sizes": ["S", "M", "L"],
+    "colors": ["#2b2b36", "#2d1b2e", "#1a1a2e"]
+  },
+  {
+    "id": 4,
+    "name": "Prism Mini Skirt",
+    "category": "bottoms",
+    "price": 9800,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=600",
+    "description": "High-waist mini skirt in structured satin. Features origami-inspired pleating and hidden zip closure.",
+    "sizes": ["XS", "S", "M", "L", "XL"],
+    "colors": ["#1a1a2e", "#2d2d44", "#16213e"]
+  },
+  {
+    "id": 5,
+    "name": "Phantom Trench",
+    "category": "outerwear",
+    "price": 32000,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=600",
+    "description": "Double-breasted trench coat in water-resistant microfibre. Removable belt and storm flap details.",
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["#2d2d3a", "#1a1a2e", "#3d3d4a"]
+  },
+  {
+    "id": 6,
+    "name": "Eclipse Jumpsuit",
+    "category": "dresses",
+    "price": 18500,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600",
+    "description": "Wide-leg jumpsuit in crepe-back satin. Features a deep V-neckline and flowing wide legs with side pockets.",
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["#0f0f1a", "#1a1a2e", "#2d1b2e"]
+  },
+  {
+    "id": 7,
+    "name": "Nova Crop Top",
+    "category": "tops",
+    "price": 7500,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600",
+    "description": "Cropped top in liquid jersey with asymmetric hem. Ribbed texture with a subtle metallic thread woven through.",
+    "sizes": ["XS", "S", "M", "L"],
+    "colors": ["#1a1a2e", "#2d2d44", "#16213e"]
+  },
+  {
+    "id": 8,
+    "name": "Shadow Pants",
+    "category": "bottoms",
+    "price": 14500,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600",
+    "description": "Wide-leg palazzo pants in matte crepe. Elastic waistband with gold-tone drawstring details.",
+    "sizes": ["XS", "S", "M", "L", "XL"],
+    "colors": ["#1a1a2e", "#2d2d44", "#0f0f1a"]
+  },
+  {
+    "id": 9,
+    "name": "Crystal Heels",
+    "category": "accessories",
+    "price": 16500,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600",
+    "description": "Transparent PVC heels with crystal embellishments. 10cm stiletto heel with cushioned insole.",
+    "sizes": ["36", "37", "38", "39", "40"],
+    "colors": ["#e8d5c4", "#f0ebe3", "#d4c5b8"]
+  },
+  {
+    "id": 10,
+    "name": "Kebera Tote",
+    "category": "accessories",
+    "price": 19500,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600",
+    "description": "Structured tote bag in pebbled leather. Gold-toned hardware with removable shoulder strap and interior zip pocket.",
+    "sizes": ["ONE"],
+    "colors": ["#1a1a2e", "#2d2d44", "#e8d5c4"]
+  },
+  {
+    "id": 11,
+    "name": "Midnight Wrap",
+    "category": "outerwear",
+    "price": 12500,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=600",
+    "description": "Cashmere-blend wrap with brushed finish. Fringed edges and oversized fit for effortless layering.",
+    "sizes": ["ONE"],
+    "colors": ["#1a1a2e", "#2d2d44", "#e8d5c4"]
+  },
+  {
+    "id": 12,
+    "name": "Luna Bodycon",
+    "category": "dresses",
+    "price": 16500,
+    "currency": "LKR",
+    "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600",
+    "description": "Bodycon midi dress in liquid stretch velvet. Scoop neckline with thin adjustable straps and back zip.",
+    "sizes": ["XS", "S", "M", "L"],
+    "colors": ["#1a1a2e", "#2d1b2e", "#0f0f1a"]
+  }
+]

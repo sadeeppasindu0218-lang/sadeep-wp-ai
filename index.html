@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KEBERA — Redefine Fashion</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◆</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">KEBERA</a>
+    <button class="menu-toggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html">Shop</a></li>
+      <li><a href="about.html">About</a></li>
+      <li>
+        <a href="cart.html" class="cart-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span class="cart-count">0</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <canvas id="three-canvas"></canvas>
+    <div class="hero-content">
+      <div class="hero-subtitle">A/W 2026 Collection</div>
+      <h1 class="hero-title">
+        <span class="gradient-text">KEBERA</span><br>
+        Redefine<br>Fashion
+      </h1>
+      <p class="hero-description">Where avant-garde design meets timeless elegance. Discover the new silhouette of modern luxury.</p>
+      <div class="hero-actions">
+        <a href="shop.html" class="glass-button">
+          Explore Collection
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="about.html" class="glass-button glass-button-outline">Our Story</a>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <section class="section" id="collections">
+    <div class="section-header">
+      <div class="section-tag">Collections</div>
+      <h2 class="section-title">Curated Elegance</h2>
+      <p class="section-description">Each piece tells a story of craftsmanship and vision.</p>
+    </div>
+    <div class="collection-grid">
+      <div class="collection-item glass" onclick="window.location='shop.html?category=outerwear'">
+        <img src="https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=600" alt="Outerwear" loading="lazy">
+        <div class="collection-overlay">
+          <h3>Outerwear</h3>
+          <p>Structured silhouettes</p>
+        </div>
+      </div>
+      <div class="collection-item glass" onclick="window.location='shop.html?category=dresses'">
+        <img src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600" alt="Dresses" loading="lazy">
+        <div class="collection-overlay">
+          <h3>Dresses</h3>
+          <p>Fluid forms</p>
+        </div>
+      </div>
+      <div class="collection-item glass" onclick="window.location='shop.html?category=accessories'">
+        <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600" alt="Accessories" loading="lazy">
+        <div class="collection-overlay">
+          <h3>Accessories</h3>
+          <p>The finishing touch</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="section-header">
+      <div class="section-tag">New Arrivals</div>
+      <h2 class="section-title">Featured Pieces</h2>
+      <p class="section-description">Handpicked for those who demand the extraordinary.</p>
+    </div>
+    <div class="products-grid" id="products-grid"></div>
+    <div style="text-align:center;margin-top:40px">
+      <a href="shop.html" class="glass-button glass-button-outline">View All</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>KEBERA</h4>
+        <a href="about.html">About</a>
+        <a href="shop.html">Collections</a>
+        <a href="#">Careers</a>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <a href="#">Contact</a>
+        <a href="#">Shipping</a>
+        <a href="#">Returns</a>
+        <a href="#">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <a href="#">Instagram</a>
+        <a href="#">Facebook</a>
+        <a href="#">Pinterest</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 KEBERA. All rights reserved. Crafted with precision.
+    </div>
+  </footer>
+
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/main.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="js/three-scene.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadProducts();
+      renderProducts(products.slice(0, 4));
+    });
+  </script>
+</body>
+</html>
