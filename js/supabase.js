@@ -1,171 +1,170 @@
-// KEBERA - Supabase Client Configuration
-// Edit config.js with your Supabase project details
+// KEBERA - Supabase Client (UMD CDN)
+// Uses globals from: https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js
+
 const SUPABASE_URL = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL) || 'https://YOUR_PROJECT.supabase.co';
 const SUPABASE_ANON_KEY = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_ANON_KEY) || 'your-anon-key-here';
+const ADMIN_EMAIL = (window.APP_CONFIG && window.APP_CONFIG.ADMIN_EMAIL) || 'admin@kebera.com';
 
-// Initialize Supabase client
-let supabaseClient = null;
+let _supabase = null;
 
-async function initSupabase() {
-  if (supabaseClient) return supabaseClient;
-  
-  try {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    return supabaseClient;
-  } catch (e) {
-    // Fallback: load from products.json
-    return null;
+function getSupabase() {
+  if (_supabase) return _supabase;
+  if (typeof supabase !== 'undefined' && supabase.createClient) {
+    _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return _supabase;
   }
+  return null;
 }
 
-// ===== PRODUCTS =====
+// ===== AUTH =====
+async function signUp(email, password) {
+  const sb = getSupabase();
+  if (!sb) return { error: { message: 'Supabase not loaded' } };
+  const { data, error } = await sb.auth.signUp({ email, password });
+  return { data, error };
+}
+
+async function signIn(email, password) {
+  const sb = getSupabase();
+  if (!sb) return { error: { message: 'Supabase not loaded' } };
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  return { data, error };
+}
+
+async function signOut() {
+  const sb = getSupabase();
+  if (!sb) return;
+  await sb.auth.signOut();
+}
+
+async function getSession() {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data } = await sb.auth.getSession();
+  return data.session;
+}
+
+async function getUser() {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data } = await sb.auth.getUser();
+  return data.user;
+}
+
+async function resetPassword(email) {
+  const sb = getSupabase();
+  if (!sb) return { error: { message: 'Supabase not loaded' } };
+  const { data, error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: (window.APP_CONFIG && window.APP_CONFIG.SITE_URL || '') + '/admin/update-password.html'
+  });
+  return { data, error };
+}
+
+async function signInWithGoogle() {
+  const sb = getSupabase();
+  if (!sb) return { error: { message: 'Supabase not loaded' } };
+  const { data, error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: (window.APP_CONFIG && window.APP_CONFIG.SITE_URL || '') + '/admin/dashboard.html'
+    }
+  });
+  return { data, error };
+}
+
+async function isAdminEmail(email) {
+  return email && email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+}
+
+// ===== PRODUCTS (public) =====
 async function loadProductsFromDB() {
-  const supabase = await initSupabase();
-  if (!supabase) return null;
-
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Supabase error:', error);
-    return null;
-  }
-
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data, error } = await sb.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false });
+  if (error) { console.error('Supabase error:', error); return null; }
   return data.map(p => ({
-    id: p.id,
-    name: p.name,
-    category: p.category,
-    price: p.price,
-    currency: p.currency,
-    image: p.image_url,
-    description: p.description,
-    sizes: p.sizes,
-    colors: p.colors
+    id: p.id, name: p.name, category: p.category, price: p.price,
+    currency: p.currency, image: p.image_url, description: p.description,
+    sizes: p.sizes, colors: p.colors
   }));
 }
 
 async function loadSettingsFromDB() {
-  const supabase = await initSupabase();
-  if (!supabase) return null;
-
-  const { data, error } = await supabase
-    .from('settings')
-    .select('*');
-
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data, error } = await sb.from('settings').select('*');
   if (error) return null;
-
   const settings = {};
   data.forEach(s => { settings[s.key] = s.value; });
   return settings;
 }
 
-// ===== ADMIN =====
-async function adminLogin(email, password) {
-  const supabase = await initSupabase();
-  if (!supabase) return { error: 'Supabase not configured' };
-
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: error.message };
-  return { user: data.user, session: data.session };
+async function placeOrder(orderData) {
+  const sb = getSupabase();
+  if (!sb) return { error: { message: 'Supabase not loaded' } };
+  const user = await getUser();
+  const { data, error } = await sb.from('orders').insert([{ ...orderData, user_id: user?.id || null }]).select();
+  return { data, error };
 }
 
-async function adminLogout() {
-  const supabase = await initSupabase();
-  if (supabase) await supabase.auth.signOut();
-}
-
-async function getAdminSession() {
-  const supabase = await initSupabase();
-  if (!supabase) return null;
-  const { data } = await supabase.auth.getSession();
-  return data.session;
-}
-
-// Admin: CRUD Products
+// ===== ADMIN (auth required) =====
 async function adminCreateProduct(product) {
-  const supabase = await initSupabase();
-  const { data, error } = await supabase.from('products').insert([{
-    name: product.name,
-    category: product.category,
-    price: product.price,
-    currency: product.currency || 'LKR',
-    image_url: product.image_url || '',
-    description: product.description || '',
-    sizes: product.sizes || ['S','M','L','XL'],
+  const sb = getSupabase();
+  const { data, error } = await sb.from('products').insert([{
+    name: product.name, category: product.category, price: product.price,
+    currency: product.currency || 'LKR', image_url: product.image_url || '',
+    description: product.description || '', sizes: product.sizes || ['S','M','L','XL'],
     colors: product.colors || ['#1a1a2e','#2d2d44']
   }]).select();
   return { data, error };
 }
 
 async function adminUpdateProduct(id, updates) {
-  const supabase = await initSupabase();
-  const { data, error } = await supabase.from('products').update({
-    ...updates,
-    updated_at: new Date().toISOString()
-  }).eq('id', id).select();
+  const sb = getSupabase();
+  const { data, error } = await sb.from('products').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id).select();
   return { data, error };
 }
 
 async function adminDeleteProduct(id) {
-  const supabase = await initSupabase();
-  const { error } = await supabase.from('products').delete().eq('id', id);
+  const sb = getSupabase();
+  const { error } = await sb.from('products').delete().eq('id', id);
   return { error };
 }
 
 async function adminGetAllProducts() {
-  const supabase = await initSupabase();
-  const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+  const sb = getSupabase();
+  const { data, error } = await sb.from('products').select('*').order('created_at', { ascending: false });
   return { data, error };
 }
 
-// Admin: Settings
 async function adminUpdateSetting(key, value) {
-  const supabase = await initSupabase();
-  const { data, error } = await supabase.from('settings').upsert({
-    key, value,
-    updated_at: new Date().toISOString()
-  }).select();
+  const sb = getSupabase();
+  const { data, error } = await sb.from('settings').upsert({ key, value, updated_at: new Date().toISOString() }).select();
   return { data, error };
 }
 
 async function adminGetAllSettings() {
-  const supabase = await initSupabase();
-  const { data, error } = await supabase.from('settings').select('*');
+  const sb = getSupabase();
+  const { data, error } = await sb.from('settings').select('*');
   return { data, error };
 }
 
-// Admin: Orders
 async function adminGetOrders() {
-  const supabase = await initSupabase();
-  const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+  const sb = getSupabase();
+  const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
   return { data, error };
 }
 
 async function adminUpdateOrderStatus(id, status) {
-  const supabase = await initSupabase();
-  const { error } = await supabase.from('orders').update({ status }).eq('id', id);
+  const sb = getSupabase();
+  const { error } = await sb.from('orders').update({ status }).eq('id', id);
   return { error };
 }
 
-// File upload to Supabase Storage
 async function uploadFile(bucket, path, file) {
-  const supabase = await initSupabase();
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .upload(path, file, { upsert: true });
+  const sb = getSupabase();
+  const { data, error } = await sb.storage.from(bucket).upload(path, file, { upsert: true });
   if (error) return { url: null, error };
-  const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path);
+  const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
   return { url: urlData.publicUrl, error: null };
-}
-
-// Place order (public)
-async function placeOrder(orderData) {
-  const supabase = await initSupabase();
-  if (!supabase) return { error: 'Checkout unavailable' };
-  const { data, error } = await supabase.from('orders').insert([orderData]).select();
-  return { data, error };
 }

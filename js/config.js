@@ -12,5 +12,6 @@
 window.APP_CONFIG = {
   SUPABASE_URL: 'https://hhhtrqordcwlctjnxkxw.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoaHRycW9yZGN3bGN0am54a3h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3Njg5ODksImV4cCI6MjA5NjM0NDk4OX0.76Vz2KfrbNUl9ynxU31MXrdpAdBmY_sgH0OBITU8uJY',
-  SITE_URL: 'https://sadeeppasindu0218-lang.github.io/sadeep-wp-ai'
+  SITE_URL: 'https://sadeeppasindu0218-lang.github.io/sadeep-wp-ai',
+  ADMIN_EMAIL: 'sadeeppasindu0218@gmail.com'
 };

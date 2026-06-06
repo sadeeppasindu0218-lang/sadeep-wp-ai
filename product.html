@@ -26,6 +26,7 @@
           <span class="cart-count">0</span>
         </a>
       </li>
+      <li><a href="login.html" id="nav-auth">Sign In</a></li>
     </ul>
   </nav>
 
@@ -65,6 +66,7 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/supabase.js"></script>
   <script src="js/products.js"></script>
@@ -73,11 +75,8 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const dbProducts = await loadProductsFromDB();
-      if (dbProducts && dbProducts.length > 0) {
-        products = dbProducts;
-      } else {
-        await loadProducts();
-      }
+      if (dbProducts && dbProducts.length > 0) { products = dbProducts; }
+      else { await loadProducts(); }
       const urlParams = new URLSearchParams(window.location.search);
       const id = parseInt(urlParams.get('id'));
       const product = products.find(p => p.id === id);
@@ -125,6 +124,10 @@
           btn.classList.add('active');
         });
       });
+
+      const session = await getSession();
+      const navAuth = document.getElementById('nav-auth');
+      if (session) { navAuth.textContent = 'Sign Out'; navAuth.href = '#'; navAuth.onclick = async (e) => { e.preventDefault(); await signOut(); window.location.reload(); }; }
     });
   </script>
 </body>

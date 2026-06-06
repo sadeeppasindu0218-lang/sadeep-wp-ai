@@ -1,8 +1,8 @@
--- KEBERA Fashion - Supabase Database Schema
--- Run this in your Supabase project SQL editor
+-- KEBERA Fashion - Supabase Schema + Security Policies
+-- Run this in Supabase SQL Editor
 
--- Products table
-CREATE TABLE IF NOT EXISTS products (
+-- === TABLES ===
+CREATE TABLE IF NOT EXISTS public.products (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
   category TEXT NOT NULL DEFAULT 'uncategorized',
@@ -17,17 +17,16 @@ CREATE TABLE IF NOT EXISTS products (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Site settings table (logo, hero text, etc)
-CREATE TABLE IF NOT EXISTS settings (
+CREATE TABLE IF NOT EXISTS public.settings (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   key TEXT NOT NULL UNIQUE,
   value JSONB NOT NULL DEFAULT '{}'::jsonb,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Orders table
-CREATE TABLE IF NOT EXISTS orders (
+CREATE TABLE IF NOT EXISTS public.orders (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   customer_name TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT NOT NULL DEFAULT '',
@@ -39,50 +38,97 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Insert default settings
-INSERT INTO settings (key, value) VALUES
+-- === DEFAULT SETTINGS ===
+INSERT INTO public.settings (key, value) VALUES
   ('site_name', '{"text":"KEBERA"}'),
   ('hero_title', '{"text":"KEBERA","highlight":"Redefine Fashion"}'),
   ('hero_subtitle', '{"text":"A/W 2026 Collection"}'),
-  ('hero_description', '{"text":"Where avant-garde design meets timeless elegance. Discover the new silhouette of modern luxury."}'),
+  ('hero_description', '{"text":"Where avant-garde design meets timeless elegance."}'),
   ('about_title', '{"text":"Defining the New Luxury"}'),
   ('about_text', '{"text":"Founded in 2024, KEBERA represents a new wave of fashion."}'),
   ('logo_url', '{"url":""}'),
   ('favicon_url', '{"url":""}')
 ON CONFLICT (key) DO NOTHING;
 
--- Enable Row Level Security
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+-- === ENABLE RLS ===
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
--- Public can read active products
-CREATE POLICY "Public read products"
-  ON products FOR SELECT
-  USING (is_active = true);
+-- === SECURITY POLICIES ===
 
--- Public can read settings
-CREATE POLICY "Public read settings"
-  ON settings FOR SELECT
-  USING (true);
+-- PRODUCTS: anyone can view active products
+DROP POLICY IF EXISTS "products_public_select" ON public.products;
+CREATE POLICY "products_public_select" ON public.products
+  FOR SELECT USING (is_active = true);
 
--- Only authenticated admin can write
-CREATE POLICY "Admin all products"
-  ON products FOR ALL
-  USING (auth.role() = 'authenticated')
-  WITH CHECK (auth.role() = 'authenticated');
+-- PRODUCTS: only authenticated users with admin role can modify
+DROP POLICY IF EXISTS "products_admin_all" ON public.products;
+CREATE POLICY "products_admin_all" ON public.products
+  FOR ALL USING (
+    auth.role() = 'authenticated' 
+    AND auth.jwt() ->> 'email' IN (
+      SELECT (value ->> 'text') FROM public.settings WHERE key = 'admin_email'
+    )
+  );
 
-CREATE POLICY "Admin all settings"
-  ON settings FOR ALL
-  USING (auth.role() = 'authenticated')
-  WITH CHECK (auth.role() = 'authenticated');
+-- SETTINGS: anyone can read
+DROP POLICY IF EXISTS "settings_public_select" ON public.settings;
+CREATE POLICY "settings_public_select" ON public.settings
+  FOR SELECT USING (true);
 
-CREATE POLICY "Admin all orders"
-  ON orders FOR ALL
-  USING (auth.role() = 'authenticated')
-  WITH CHECK (auth.role() = 'authenticated');
+-- SETTINGS: only admin can modify
+DROP POLICY IF EXISTS "settings_admin_all" ON public.settings;
+CREATE POLICY "settings_admin_all" ON public.settings
+  FOR ALL USING (
+    auth.role() = 'authenticated'
+    AND auth.jwt() ->> 'email' IN (
+      SELECT (value ->> 'text') FROM public.settings WHERE key = 'admin_email'
+    )
+  );
 
--- Public can create orders (checkout)
-CREATE POLICY "Public insert orders"
-  ON orders FOR INSERT
-  WITH CHECK (true);
+-- ORDERS: users can see their own orders
+DROP POLICY IF EXISTS "orders_user_select" ON public.orders;
+CREATE POLICY "orders_user_select" ON public.orders
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- ORDERS: anyone authenticated can insert their own order
+DROP POLICY IF EXISTS "orders_user_insert" ON public.orders;
+CREATE POLICY "orders_user_insert" ON public.orders
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- ORDERS: admin can see/modify all orders
+DROP POLICY IF EXISTS "orders_admin_all" ON public.orders;
+CREATE POLICY "orders_admin_all" ON public.orders
+  FOR ALL USING (
+    auth.role() = 'authenticated'
+    AND auth.jwt() ->> 'email' IN (
+      SELECT (value ->> 'text') FROM public.settings WHERE key = 'admin_email'
+    )
+  );
+
+-- === STORAGE ===
+-- Create bucket (run in Storage > New Bucket > kebera-assets > public)
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('kebera-assets', 'kebera-assets', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Allow public to read files
+DROP POLICY IF EXISTS "storage_public_select" ON storage.objects;
+CREATE POLICY "storage_public_select" ON storage.objects
+  FOR SELECT USING (bucket_id = 'kebera-assets');
+
+-- Allow admin to upload/delete files
+DROP POLICY IF EXISTS "storage_admin_insert" ON storage.objects;
+CREATE POLICY "storage_admin_insert" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'kebera-assets'
+    AND auth.role() = 'authenticated'
+  );
+
+DROP POLICY IF EXISTS "storage_admin_delete" ON storage.objects;
+CREATE POLICY "storage_admin_delete" ON storage.objects
+  FOR DELETE USING (
+    bucket_id = 'kebera-assets'
+    AND auth.role() = 'authenticated'
+  );
